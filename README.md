@@ -39,7 +39,7 @@ Le projet s'appuie sur plusieurs principes fondamentaux du programme de SI :
 | Débit H2 max | 500 | ml/min |
 | Tension de charge | 0.1 - 1.2 | V |
 | Rendement Type | 40% - 60% | $\eta$ |
-| Sortie Eau | ml/min | liquide |
+| Sortie Eau | 0,005 | ml/min |
 
 ## 📜 Licence
 Ce projet est sous licence **GPL 3.0**. Vous êtes libre de copier, modifier et distribuer ce logiciel, à condition que les sources restent ouvertes et sous la même licence. Voir le fichier `LICENSE` pour plus de détails.
