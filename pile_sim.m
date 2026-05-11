@@ -1,36 +1,48 @@
-%% PEM Electrolyzer Simulation: Horizon Auto Cell
+%% Dynamic PEM Electrolyzer Control
 clear; clc;
 
-% --- 1. Define Pile Physical Data ---
-n_cells = 1;                % Single cell for Horizon kit
-A = 5.3;                    % Active area in cm^2 (standard Horizon size)
-membrane_thickness = 175;   % Nafion 117 is approx 175 micrometers
+% --- Pile Constants (Horizon Auto Cell) ---
+n = 1;              % 1 cell
+A = 5.3;            % cm^2
+F = 96485;          % Faraday Constant
+R_int = 0.15;       % Internal Resistance (Adjustable)
 
-% --- 2. Define Variables to Vary ---
-current_intensity = [0.1, 0.5, 1.0, 1.5]; % Amps (Intensity)
-water_flow_rate = [0.5, 1.0, 2.0];        % ml/min (Quantity of water)
+% --- Setup Live Plot ---
+figure('Name', 'Horizon PEM Live Monitor', 'Color', 'w');
+h1 = subplot(2,1,1); grid on; hold on;
+title('Voltage Response (V)'); xlabel('Time (s)'); ylabel('Volts');
+h2 = subplot(2,1,2); grid on; hold on;
+title('H2 Production Rate (mol/s)'); xlabel('Time (s)'); ylabel('Flow');
 
-% --- 3. Run Simulation Loop ---
-results = struct();
+% --- Dynamic Simulation Loop ---
+total_time = 100; % seconds
+dt = 0.5;         % time step
 
-for i = 1:length(current_intensity)
-    I = current_intensity(i);
+for t = 0:dt:total_time
+    % 1. SIMULATE DYNAMIC INPUTS (You can change these values manually here)
+    if t < 30
+        Intensity = 0.5;   % Low Power phase
+        Water_Qty = 1.0;
+    elseif t < 70
+        Intensity = 1.2;   % High Power phase (Stress test)
+        Water_Qty = 2.0;   % Increase water to cool/hydrate
+    else
+        Intensity = 0.8;   % Recovery phase
+        Water_Qty = 1.0;
+    end
 
-    % Example Calculation: Hydrogen Production Rate (molar)
-    % n_dot = (n * I) / (z * F)
-    z = 2; 
-    F = 96485;
-    h2_prod = (n_cells * I) / (z * F);
+    % 2. ELECTROCHEMICAL CALCULATIONS
+    % V = E_rev + I*R + Activation_Loss
+    V_rev = 1.229; 
+    V_stack = n * (V_rev + (Intensity * R_int) + 0.05 * log(Intensity/0.001));
 
-    % Store results
-    results(i).intensity = I;
-    results(i).h2_flow = h2_prod;
+    % H2 Production (Faraday's Law)
+    H2_flow = (n * Intensity) / (2 * F);
 
-    fprintf('Simulating Intensity: %.2f A... Done.\n', I);
+    % 3. UPDATE LIVE PLOTS
+    plot(h1, t, V_stack, 'r.');
+    plot(h2, t, H2_flow, 'b.');
+    drawnow limitrate; % Forces MATLAB to update the UI
+
+    pause(0.05); % Slows down simulation so you can watch it
 end
-
-% --- 4. Plotting the Polarization Curve ---
-% (Assuming you have a function to calculate Voltage V)
-% plot(current_intensity, [results.voltage]); 
-% title('Horizon PEM Pile: V-I Curve');
-% xlabel('Intensity (A)'); ylabel('Voltage (V)');
